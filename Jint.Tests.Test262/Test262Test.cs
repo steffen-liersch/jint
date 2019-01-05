@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Jint.Runtime;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Jint.Tests.Test262
 {
@@ -196,10 +197,6 @@ namespace Jint.Tests.Test262
                                 skip = true;
                                 reason = "generators not implemented";
                                 break;
-                            case "let":
-                                skip = true;
-                                reason = "let not implemented";
-                                break;
                             case "async-functions":
                                 skip = true;
                                 reason = "async-functions not implemented";
@@ -242,8 +239,13 @@ namespace Jint.Tests.Test262
         }
     }
 
-    public class SourceFile
+    public class SourceFile : IXunitSerializable
     {
+        public SourceFile()
+        {
+
+        }
+
         public SourceFile(
             string source,
             string fullPath,
@@ -258,15 +260,25 @@ namespace Jint.Tests.Test262
             Code = code;
         }
 
-        public string Source { get; }
-        public bool Skip { get; }
-        public string Reason { get; }
-        public string FullPath { get; }
-        public string Code { get; }
+        public string Source { get; set; }
+        public bool Skip { get; set; }
+        public string Reason { get; set; }
+        public string FullPath { get; set; }
+        public string Code { get; set; }
+
+        public void Deserialize(IXunitSerializationInfo info)
+        {
+            FullPath = info.GetValue<string>("FullPath");
+        }
+
+        public void Serialize(IXunitSerializationInfo info)
+        {
+            info.AddValue("FullPath", FullPath);
+        }
 
         public override string ToString()
         {
-            return Source;
+            return Path.GetFileNameWithoutExtension(FullPath);
         }
     }
 }

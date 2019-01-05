@@ -27,5 +27,21 @@ namespace Jint.Tests.Test262
         {
             RunTestInternal(sourceFile);
         }
+
+        [Theory(DisplayName = "language\\statements\\let")]
+        [MemberData(nameof(SourceFiles), "language\\statements\\let", false)]
+        [MemberData(nameof(SourceFiles), "language\\statements\\let", true, Skip = "Skipped")]
+        protected void Let(SourceFile sourceFile)
+        {
+            RunTestInternal(sourceFile);
+        }
+
+        [Theory(DisplayName = "language\\statements\\const")]
+        [MemberData(nameof(SourceFiles), "language\\statements\\const", false)]
+        [MemberData(nameof(SourceFiles), "language\\statements\\const", true, Skip = "Skipped")]
+        protected void Const(SourceFile sourceFile)
+        {
+            RunTestInternal(sourceFile);
+        }
     }
 }
