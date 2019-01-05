@@ -1,5 +1,7 @@
 using Esprima;
 using Esprima.Ast;
+using Jint.Runtime.Environments;
+using Jint.Runtime.Interpreter.Expressions;
 
 namespace Jint.Runtime.Interpreter.Statements
 {
@@ -12,9 +14,23 @@ namespace Jint.Runtime.Interpreter.Statements
             _statementList = statementList;
         }
 
+        // http://www.ecma-international.org/ecma-262/6.0/#sec-blockdeclarationinstantiation
         protected override Completion ExecuteInternal()
         {
-            return _statementList.Execute();
+            var env = LexicalEnvironment.NewDeclarativeEnvironment(_engine, _engine.ExecutionContext.LexicalEnvironment);
+
+            _statementList.BlockDeclarationInstantiation(env.Record);
+
+            try
+            {
+                _engine.EnterExecutionContext(env, _engine.ExecutionContext.VariableEnvironment, _engine.ExecutionContext.ThisBinding);
+                return _statementList.Execute();
+            }
+            finally
+            {
+                _engine.LeaveExecutionContext();
+            }           
+
         }
 
         public override Location Location => null;

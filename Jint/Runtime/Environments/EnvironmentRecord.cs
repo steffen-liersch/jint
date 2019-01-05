@@ -35,6 +35,21 @@ namespace Jint.Runtime.Environments
         public abstract void CreateMutableBinding(string name, JsValue value, bool canBeDeleted = false);
 
         /// <summary>
+        /// Creates a new but uninitialized immutable binding in an environment record.
+        /// </summary>
+        /// <param name="name">The identifier of the binding.</param>
+        /// <param name="value">The value of the binding.</param>
+        /// <param name="strict"><c>false</c> if the binding may used before it's been initialized.</param>
+        public abstract void CreateImmutableBinding(string name, JsValue value, bool strict = false);
+
+        /// <summary>
+        /// Set the value of an already existing but uninitialized binding in an Environment Record.
+        /// </summary>
+        /// <param name="name">The text of the bound name</param>
+        /// <param name="value">The value for the binding.</param>
+        public abstract void InitializeBinding(string name, JsValue value);
+
+        /// <summary>
         /// Sets the value of an already existing mutable binding in an environment record. 
         /// </summary>
         /// <param name="name">The identifier of the binding</param>

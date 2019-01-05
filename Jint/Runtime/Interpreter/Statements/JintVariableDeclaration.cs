@@ -1,5 +1,6 @@
 using Esprima.Ast;
 using Jint.Native;
+using Jint.Runtime.Environments;
 using Jint.Runtime.Interpreter.Expressions;
 using Jint.Runtime.References;
 
@@ -28,6 +29,7 @@ namespace Jint.Runtime.Interpreter.Statements
         protected override void Initialize()
         {
             _declarations = new ResolvedDeclaration[_statement.Declarations.Count];
+
             for (var i = 0; i < _declarations.Length; i++)
             {
                 var declaration = _statement.Declarations[i];
@@ -64,33 +66,59 @@ namespace Jint.Runtime.Interpreter.Statements
         protected override Completion ExecuteInternal()
         {
             var declarations = _declarations;
-            for (var i = 0; i < (uint) declarations.Length; i++)
-            {
-                var declaration = declarations[i];
-                if (declaration.Init != null)
-                {
-                    if (declaration.LeftPattern != null)
-                    {
-                        BindingPatternAssignmentExpression.ProcessPatterns(
-                            _engine,
-                            declaration.LeftPattern,
-                            declaration.Init.GetValue());
-                    }
-                    else if (declaration.LeftIdentifier == null
-                        || JintAssignmentExpression.SimpleAssignmentExpression.AssignToIdentifier(
-                            _engine,
-                            declaration.LeftIdentifier,
-                            declaration.Init,
-                            declaration.EvalOrArguments) is null)
-                    {
-                        // slow path
-                        var lhs = (Reference) declaration.Left.Evaluate();
-                        lhs.AssertValid(_engine);
 
-                        var value = declaration.Init.GetValue();
-                        _engine.PutValue(lhs, value);
-                        _engine._referencePool.Return(lhs);
+            if (_statement.Kind == "var")
+            {
+                for (var i = 0; i < (uint)declarations.Length; i++)
+                {
+                    var declaration = declarations[i];
+                    if (declaration.Init != null)
+                    {
+                        if (declaration.LeftPattern != null)
+                        {
+                            BindingPatternAssignmentExpression.ProcessPatterns(
+                                _engine,
+                                declaration.LeftPattern,
+                                declaration.Init.GetValue());
+                        }
+                        else if (declaration.LeftIdentifier == null
+                            || JintAssignmentExpression.SimpleAssignmentExpression.AssignToIdentifier(
+                                _engine,
+                                declaration.LeftIdentifier,
+                                declaration.Init,
+                                declaration.EvalOrArguments) is null)
+                        {
+                            // slow path
+                            var lhs = (Reference)declaration.Left.Evaluate();
+                            lhs.AssertValid(_engine);
+
+                            var value = declaration.Init.GetValue();
+                            _engine.PutValue(lhs, value);
+                            _engine._referencePool.Return(lhs);
+                        }
                     }
+                }
+            }
+            else
+            {
+                // TODO: Use the optimizations from the Initialize() phase
+                // TODO: Handle BindingPattern
+
+                foreach (var declaration in _statement.Declarations)
+                {
+                    var identifier = (JintIdentifierExpression)JintExpression.Build(_engine, (Expression) declaration.Id);
+
+                    var lhs = _engine.ResolveBinding(identifier._expressionName);
+                    var rhs = JsValue.Undefined;
+                    
+                    if (declaration.Init != null)
+                    {
+                        rhs = JintExpression.Build(_engine, declaration.Init).GetValue();
+                    }
+
+                    _engine.InitializeReferenceBinding(lhs, rhs);
+
+                    _engine._referencePool.Return(lhs);
                 }
             }
 

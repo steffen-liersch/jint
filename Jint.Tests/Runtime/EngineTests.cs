@@ -2695,5 +2695,41 @@ function output(x) {
             result = function.Invoke(3, JsValue.Undefined).ToString();
             Assert.Equal("15", result);
         }
+
+        [Fact]
+        public void ShouldSupportLet()
+        {
+            RunTest(@"
+                let x = 0;
+                assert(x == 0);
+                {
+                    let x = 1;
+                    {
+                        let x = 2;
+                        assert(x == 2);
+                    }
+                    assert(x == 1);
+                }
+                assert(x == 0);
+            ");
+        }
+
+        [Fact]
+        public void ShouldSupportConst()
+        {
+            RunTest(@"
+                const x = 0;
+                assert(x == 0);
+                {
+                    const x = 1;
+                    {
+                        const x = 2;
+                        assert(x == 2);
+                    }
+                    assert(x == 1);
+                }
+                assert(x == 0);
+            ");
+        }
     }
 }

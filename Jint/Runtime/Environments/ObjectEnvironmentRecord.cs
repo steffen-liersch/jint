@@ -56,6 +56,20 @@ namespace Jint.Runtime.Environments
             _bindingObject.SetOwnProperty(name, propertyDescriptor);
         }
 
+        // http://www.ecma-international.org/ecma-262/6.0/#sec-object-environment-records-createimmutablebinding-n-s
+        public override void CreateImmutableBinding(string name, JsValue value, bool strict = false)
+        {
+            throw new InvalidOperationException("The concrete Environment Record method CreateImmutableBinding is never used within this specification in association with Object Environment Records.");
+        }
+
+        /// <summary>
+        /// http://www.ecma-international.org/ecma-262/6.0/#sec-object-environment-records-initializebinding-n-v
+        /// </summary>
+        public override void InitializeBinding(string name, JsValue value)
+        {
+            SetMutableBinding(name, value, false);
+        }
+
         public override void SetMutableBinding(string name, JsValue value, bool strict)
         {
             _bindingObject.Put(name, value, strict);

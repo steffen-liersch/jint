@@ -151,6 +151,17 @@ using Jint.Native.Function;
             SetItem(name, new Binding(value, canBeDeleted, mutable: true));
         }
 
+        public override void CreateImmutableBinding(string name, JsValue value, bool strict = false)
+        {
+            SetItem(name, new Binding(value, false, mutable: false));
+        }
+
+        public override void InitializeBinding(string name, JsValue value)
+        {
+            ref var binding = ref GetExistingItem(name);
+            binding.Value = value;
+        }
+
         public override void SetMutableBinding(string name, JsValue value, bool strict)
         {
             ref var binding = ref GetExistingItem(name);
